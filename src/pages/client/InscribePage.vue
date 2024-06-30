@@ -2,7 +2,7 @@
   <q-page class="flex flex-center mainPage">
     <div class="box">
       <div class="title">
-        <p>ASOCIACIÓN CIVIL "EL PARAGUERO"</p>
+        <p>INSCRÍBETE EN UN CURSO</p>
       </div>
       <div class="dataBox">
         <div class="tableCourses">
@@ -18,7 +18,15 @@
               class="tableCourse"
               rows-per-page-label="Documentos por página"
               dark
+              separator="cell"
             >
+              <template v-slot:top>
+                <img
+                  style="height: 50px; width: 50px"
+                  src="https://cdn.quasar.dev/logo-v2/svg/logo.svg"
+                />
+              </template>
+
               <template v-slot:body="props">
                 <q-tr :props="props">
                   <q-td key="name" :props="props">
@@ -27,62 +35,85 @@
                   <q-td key="teacher" :props="props">
                     {{ props.row.teacher }}
                   </q-td>
+                  <q-td key="ubication" :props="props">
+                    {{ props.row.ubication }}
+                  </q-td>
+                  <q-td key="description" :props="props">
+                    {{ props.row.description }}
+                  </q-td>
                   <q-td key="hours" :props="props">
-                    <div class="text-pre-wrap">{{ props.row.hours }}</div>
+                    {{ props.row.hours }}
+                  </q-td>
+                  <q-td key="actions" :props="props">
+                    <div class="q-gutter-sm row justify-around">
+                      <q-btn
+                        round
+                        color="green"
+                        icon="navigation"
+                        @click="changeModalInscribe(props.row)"
+                      />
+                      <q-btn
+                        round
+                        color="blue"
+                        icon="info"
+                        @click="changeModalInfo(props.row)"
+                      />
+                    </div>
                   </q-td>
                 </q-tr>
               </template>
             </q-table>
           </div>
         </div>
-        <div class="infoBox">
-          <img src="/paraguero.png" alt="" />
-          <div class="info">
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Labore at
-              voluptates, totam expedita facilis quo, deleniti illum, tenetur corporis
-              odit eius. Dolor ipsam sunt laudantium cupiditate placeat? Similique
-              asperiores hic consequuntur nam consectetur? Nulla, suscipit!
-            </p>
-          </div>
-          <div class="social">
-            <p>Redes Sociales</p>
-            <div class="socialB">
-              <q-btn
-                color="secondary"
-                :icon-right="'img:public/icons/instagram.svg'"
-                label="Instagram"
-                class="btn"
-              />
-              <q-btn
-                color="secondary"
-                :icon-right="'img:public/icons/facebook.svg'"
-                label="Facebook"
-                class="btn"
-              />
-              <q-btn
-                color="secondary"
-                :icon-right="'img:public/icons/whatsapp.svg'"
-                label="Whatsapp"
-                class="btn"
-              />
-            </div>
-          </div>
-        </div>
       </div>
+
+      <inscribe-modal
+        :course="course"
+        :open="modalInscribe"
+        :changeModal="changeModalInscribe"
+        v-if="modalInscribe"
+      />
+
+      <info-modal
+        :course="course"
+        :open="modalInfo"
+        :changeModal="changeModalInfo"
+        v-if="modalInfo"
+      />
     </div>
   </q-page>
 </template>
 
 <script setup>
 import { useRoute, useRouter } from "vue-router";
+import InscribeModal from "../../modal/client/InscribeModal.vue";
+import InfoModal from "../../modal/client/InfoModal.vue";
+import { ref } from "vue";
 
 const router = useRouter();
 const route = useRoute();
 
 defineOptions({
-  name: "ClientPage",
+  name: "InscribePage",
+  components: {
+    "inscribe-modal": InscribeModal,
+    "info-modal": InfoModal,
+  },
 });
+
+const modalInscribe = ref(false);
+const modalInfo = ref(false);
+const course = ref("");
+
+const changeModalInscribe = (courseSelect) => {
+  course.value = courseSelect;
+  modalInscribe.value = !modalInscribe.value;
+};
+
+const changeModalInfo = (courseSelect) => {
+  course.value = courseSelect;
+  modalInfo.value = !modalInfo.value;
+};
 
 const columns = [
   {
@@ -99,14 +130,33 @@ const columns = [
     align: "center",
     label: "Dictado Por",
     field: "teacher",
+    align: "left",
     sortable: true,
+  },
+  {
+    name: "ubication",
+    label: "Ubicación",
+    field: "ubication",
+    align: "left",
+  },
+  {
+    name: "description",
+    label: "Descripción",
+    align: "left",
+    field: "description",
   },
   {
     name: "hours",
     label: "Horas",
     field: "hours",
     sortable: true,
-    style: "width: 10px",
+  },
+  {
+    name: "actions",
+    label: "Acciones",
+    align: "center",
+    content: "center",
+    field: "actions",
   },
 ];
 
@@ -114,6 +164,30 @@ const rows = [
   {
     name: "Matemática",
     teacher: "Alejandro",
+    ubication: "PSM",
+    description:
+      "Curso para mejorar las habilidades matemáticaASDDDDDDDDDDDDDSAAAAAAAAAAAs",
+    hours: 20,
+  },
+  {
+    name: "Dibujo",
+    teacher: "Alejandro",
+    ubication: "PSM",
+    description: "Curso para mejorar las habilidades de dibujo",
+    hours: 20,
+  },
+  {
+    name: "Costura",
+    teacher: "Alejandro",
+    ubication: "PSM",
+    description: "Curso para mejorar las habilidades costura",
+    hours: 20,
+  },
+  {
+    name: "Cocina",
+    teacher: "Alejandro",
+    ubication: "PSM",
+    description: "Curso para mejorar las habilidades cocina",
     hours: 20,
   },
 ];
@@ -125,8 +199,7 @@ const rows = [
 }
 
 .mainPage {
-  background: rgb(229, 97, 0);
-  background: linear-gradient(34deg, rgba(229, 97, 0, 1) 0%, rgba(9, 9, 121, 1) 100%);
+  background: rgb(91, 123, 212);
   position: absolute;
   top: 0;
   left: 0;
@@ -172,7 +245,7 @@ p {
 }
 
 .tableCourses {
-  width: 30vw;
+  width: 90vw;
   height: 100%;
   /* background: red; */
 }

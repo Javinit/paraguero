@@ -65,8 +65,8 @@ onMounted(() => {
   // currentPath.value.changePath("register");
 });
 
-const toHome = () => router.push("/");
-const toLogin = () => router.push("/login");
+const toHome = () => router.push({name:"Index"});
+const toLogin = () => router.push({name:"Login"});
 
 const Register = async () => {
   try {
@@ -105,8 +105,8 @@ const Register = async () => {
 }
 
 .mainPage {
-  background: rgb(229, 97, 0);
-  background: linear-gradient(34deg, rgba(229, 97, 0, 1) 0%, rgba(9, 9, 121, 1) 100%);
+  background: rgb(91, 123, 212);
+  /* background: linear-gradient(34deg, rgb(88, 199, 112) 0%, rgba(215,123,28,1) 85%); */
   position: absolute;
   top: 0;
   left: 0;

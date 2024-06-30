@@ -9,22 +9,15 @@ export const currentPath = ref({
     changePath(path) {
         switch (path) {
             case '':
-                this.buttonString = 'Registrarse'
-                this.nextRoute = 'register'
-                break;
             case 'login':
                 this.buttonString = 'Registrarse'
-                this.nextRoute = 'register'
+                this.nextRoute = { name: 'Register' }
                 break;
             case 'register':
-                this.buttonString = 'Iniciar Sesión'
-                this.nextRoute = 'login'
-                break;
             case 'client':
-                this.buttonString = 'Cerrar Sesión'
-                this.nextRoute = 'login'
-                break;
             default:
+                this.buttonString = 'Cerrar Sesión'
+                this.nextRoute = { name: 'Login' }
                 break;
         }
     }
@@ -33,11 +26,21 @@ export const currentPath = ref({
 
 export const authUser = ref({
     isAuth: false,
+    userLevel: 0,
     async verifyToken() {
         const token = SessionStorage.getItem("Authorization")
         if (token) api.defaults.headers.common["Authorization"] = token;
-        const verify = await api.get('/users/verifyToken')
+        const verify = await api.get('/users/verifyToken').then(e => {
+            return e
+        }).catch((e) => {
+            return { data: false }
+        })
         this.isAuth = verify.data.status
+        this.userLevel = verify.data.user ? verify.data.user.level : 0
         return verify.data.status
+    },
+    async verifyAdminRoute(next) {
+        if (this.userLevel == 1) next()
+        return { name: 'Login' }
     }
 })

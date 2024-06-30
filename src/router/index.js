@@ -29,15 +29,30 @@ export default route(function (/* { store, ssrContext } */) {
 
   Router.beforeEach(async (to, from) => {
     await authUser.value.verifyToken()
-    console.log('tooo', to);
-    if (authUser.value.isAuth && (to.fullPath == '/' || to.fullPath == '/login' || to.fullPath == '/register')) {
-      console.log('ACA 111');
+
+    if (!authUser.value.isAuth && (to.fullPath !== '/' && to.fullPath !== '/login' && to.fullPath !== '/register')) {
+      return { name: 'Login' }
+    }
+
+    if (to.fullPath == '/' || to.fullPath == '/login' || to.fullPath == '/register') {
+      switch (authUser.value.level) {
+        case 1:
+          return { name: 'Admin' }
+          break;
+        case 2:
+          return { name: 'Client' }
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (authUser.value.userLevel == 2 && (!to.fullPath.startsWith('/client'))) {
       return { name: 'Client' }
     }
 
-    if (!authUser.value.isAuth && to.fullPath !== '/' && to.fullPath !== '/login' && to.fullPath !== '/register') {
-      console.log('ACA 222');
-      return { fullPath: '/login' }
+    if (authUser.value.userLevel == 1 && (!to.fullPath.startsWith('/admin'))) {
+      return { name: 'Admin' }
     }
   })
 

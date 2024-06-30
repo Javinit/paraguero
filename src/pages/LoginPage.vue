@@ -53,8 +53,8 @@ const loading = ref(false);
 const router = useRouter();
 const route = useRoute();
 
-const toHome = () => router.push("/");
-const toRegister = () => router.push("/register");
+const toHome = () => router.push({ name: "Index" });
+const toRegister = () => router.push({ name: "Register" });
 
 const Login = async () => {
   try {
@@ -68,7 +68,12 @@ const Login = async () => {
 
     api.defaults.headers.common["Authorization"] = res.data.token;
     SessionStorage.set("Authorization", res.data.token);
-    router.push("/client");
+
+    if (res.data.level == 2) {
+      router.push({ name: "Client" });
+    } else {
+      router.push({ name: "Admin" });
+    }
   } catch (error) {
     console.log("ERROR? ", error);
     Swal.fire({
@@ -89,8 +94,8 @@ const Login = async () => {
 }
 
 .mainPage {
-  background: rgb(229, 97, 0);
-  background: linear-gradient(34deg, rgba(229, 97, 0, 1) 0%, rgba(9, 9, 121, 1) 100%);
+  background: rgb(91, 123, 212);
+  /* background: linear-gradient(34deg, rgb(88, 199, 112) 0%, rgba(215,123,28,1) 85%); */
   position: absolute;
   top: 0;
   left: 0;
@@ -121,7 +126,7 @@ const Login = async () => {
 }
 
 form {
-  height: 520px;
+  height: fit-content;
   width: 38vw;
   background-color: rgba(0, 0, 0, 0.459);
   position: relative;

@@ -49,18 +49,23 @@ defineOptions({
   name: "MainLayout",
 });
 
-watch(currentPath.value, (path) => {
+watch(currentPath.value, () => {
   buttonString.value = currentPath.value.buttonString;
-  if (buttonString.value == "Cerrar Sesión") isLogin.value = true;
+});
+
+watch(authUser.value, () => {
+  if (authUser.value.isAuth) isLogin.value = true;
   else isLogin.value = false;
 });
 
-watch(route, (newPath) => {
+watch(route, () => {
   currentPath.value.changePath(router.currentRoute.value.fullPath.replace("/", ""));
 });
 
 onMounted(async () => {
   const isVerify = await authUser.value.verifyToken();
+  if (authUser.value.isAuth) isLogin.value = true;
+  else isLogin.value = false;
   if (
     !isVerify &&
     route.fullPath !== "/" &&
@@ -69,13 +74,12 @@ onMounted(async () => {
   ) {
     api.defaults.headers.common["Authorization"] = "";
     SessionStorage.removeItem("Authorization");
-    router.push("/");
+    router.push({ name: "Index" });
   }
   currentPath.value.changePath(router.currentRoute.value.fullPath.replace("/", ""));
 });
 
 const changeRoute = async () => {
-  console.log("=???");
   if (buttonString.value == "Cerrar Sesión") {
     api.defaults.headers.common["Authorization"] = "";
     SessionStorage.removeItem("Authorization");
@@ -87,7 +91,7 @@ const changeRoute = async () => {
 const sendInstagram = () =>
   window.open("https://www.instagram.com/acelparaguero/?hl=es", "_blank");
 
-const returnIndex = () => router.push("/");
+const returnIndex = () => router.push({ name: "Index" });
 </script>
 
 <style scoped>
@@ -109,6 +113,6 @@ const returnIndex = () => router.push("/");
 
 .headerS {
   /* background: linear-gradient(90deg, rgba(229, 97, 0, 1) 0%, rgba(9, 9, 121, 1) 100%); */
-  background: #00000000;
+  background: #2747d6;
 }
 </style>

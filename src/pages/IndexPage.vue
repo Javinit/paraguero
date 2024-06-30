@@ -30,18 +30,18 @@ defineOptions({
   name: "IndexPage",
 });
 
-const toLogin = () => router.push("/login");
-const toRegister = () => router.push("/register");
+const toLogin = () => router.push({ name: "Login" });
+const toRegister = () => router.push({ name: "Register" });
 </script>
 
 <style scoped>
- *{
+* {
   scrollbar-width: none;
- }
+}
 
 .mainPage {
-  background: rgb(229, 97, 0);
-  background: linear-gradient(34deg, rgba(229, 97, 0, 1) 0%, rgba(9, 9, 121, 1) 100%);
+  background: rgb(91, 123, 212);
+  /* background: linear-gradient(34deg, rgb(88, 199, 112) 0%, rgba(215,123,28,1) 85%); */
   position: absolute;
   top: 0;
   left: 0;
