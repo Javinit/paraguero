@@ -70,6 +70,7 @@ import { useRoute, useRouter } from "vue-router";
 import { watch, ref, onMounted } from "vue";
 import { SessionStorage } from "quasar";
 import { api } from "src/boot/axios";
+import Swal from "sweetalert2";
 
 const router = useRouter();
 const route = useRoute();
