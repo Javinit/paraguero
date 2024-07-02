@@ -117,8 +117,8 @@ const close = (decision) => {
       loading.value = false;
       card.value = false;
       Swal.fire({
-        title: "Elimnado",
-        text: "Curso Elimnado Correctamente",
+        title: "Creado",
+        text: "Encuentro Creado Correctamente",
         icon: "success",
         confirmButtonText: "Aceptar",
         timer: 3000,

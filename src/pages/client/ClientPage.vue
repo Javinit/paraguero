@@ -7,23 +7,10 @@
       <div class="dataBox">
         <div class="tableCourses">
           <div class="q-pa-md">
-            <q-table
-              flat
-              bordered
-              title="Cursos"
-              :rows="rows"
-              :columns="columns"
-              row-key="name"
-              binary-state-sort
-              class="tableCourse"
-              rows-per-page-label="Documentos por página"
-              dark
-            >
+            <q-table flat bordered title="Cursos" :rows="rows" :columns="columns" row-key="name" binary-state-sort
+              class="tableCourse" rows-per-page-label="Documentos por página" dark>
               <template v-slot:top>
-                <img
-                  style="height: 50px; width: 50px"
-                  src="https://cdn.quasar.dev/logo-v2/svg/logo.svg"
-                />
+                <img style="height: 50px; width: 50px" src="https://cdn.quasar.dev/logo-v2/svg/logo.svg" />
                 <q-space />
                 <q-btn rounded outline @click="toInscribe"> Inscríbete </q-btn>
               </template>
@@ -62,24 +49,9 @@
           </div>
           <div class="social">
             <div class="socialB">
-              <q-btn
-                color="secondary"
-                :icon-right="'img:public/icons/instagram.svg'"
-                label="Instagram"
-                class="btn"
-              />
-              <q-btn
-                color="secondary"
-                :icon-right="'img:public/icons/facebook.svg'"
-                label="Facebook"
-                class="btn"
-              />
-              <q-btn
-                color="secondary"
-                :icon-right="'img:public/icons/whatsapp.svg'"
-                label="Whatsapp"
-                class="btn"
-              />
+              <q-btn color="secondary" :icon-right="'img:public/icons/instagram.svg'" label="Instagram" class="btn" />
+              <q-btn color="secondary" :icon-right="'img:public/icons/facebook.svg'" label="Facebook" class="btn" />
+              <q-btn color="secondary" :icon-right="'img:public/icons/whatsapp.svg'" label="Whatsapp" class="btn" />
             </div>
           </div>
         </div>
@@ -90,6 +62,8 @@
 
 <script setup>
 import { useRoute, useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
+import { api } from "../../boot/axios.js"
 
 const router = useRouter();
 const route = useRoute();
@@ -97,6 +71,8 @@ const route = useRoute();
 defineOptions({
   name: "ClientPage",
 });
+
+const rows = ref([])
 
 const columns = [
   {
@@ -124,13 +100,11 @@ const columns = [
   },
 ];
 
-const rows = [
-  {
-    name: "Matemática",
-    teacher: "Alejandro",
-    hours: 20,
-  },
-];
+onMounted(async () => {
+  const res = await api.get('/course')
+  rows.value = res.data
+})
+
 
 const toInscribe = () => router.push({ name: "ClientInscribe" });
 </script>
@@ -229,6 +203,7 @@ p {
   height: 30%;
   /* background: blue; */
 }
+
 .social {
   width: 60vw;
   height: 30%;
