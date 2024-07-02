@@ -7,18 +7,8 @@
       <div class="dataBox">
         <div class="tableCourses">
           <div class="q-pa-md">
-            <q-table
-              flat
-              bordered
-              title="Cursos"
-              :rows="rows"
-              :columns="columns"
-              row-key="name"
-              binary-state-sort
-              class="tableCourse"
-              rows-per-page-label="Documentos por página"
-              dark
-            >
+            <q-table flat bordered title="Cursos" :rows="rows" :columns="columns" row-key="name" binary-state-sort
+              class="tableCourse" rows-per-page-label="Documentos por página" dark>
               <template v-slot:top>
                 <p>Cursos</p>
                 <q-space />
@@ -38,19 +28,9 @@
                   </q-td>
                   <q-td key="actions" :props="props">
                     <div class="q-gutter-sm row justify-center">
-                      <q-btn
-                        rounded
-                        @click="openModalEdit(props.row)"
-                        color="blue"
-                        icon="edit"
-                      />
+                      <q-btn rounded @click="openModalEdit(props.row)" color="blue" icon="edit" />
 
-                      <q-btn
-                        rounded
-                        @click="openModalDelete(props.row)"
-                        color="red"
-                        icon="delete"
-                      />
+                      <q-btn rounded @click="openModalDelete(props.row)" color="red" icon="delete" />
                     </div>
                   </q-td>
                 </q-tr>
@@ -59,25 +39,13 @@
           </div>
         </div>
       </div>
-      <create-modal
-        :open="modalCreate"
-        :changeModal="openModalCreate"
-        v-if="modalCreate"
-      />
+      <create-modal :open="modalCreate" :changeModal="openModalCreate" v-if="modalCreate" :loadCourse="loadCourse" />
 
-      <edit-modal
-        :course="courseSelect"
-        :open="modalEdit"
-        :changeModal="openModalEdit"
-        v-if="modalEdit"
-      />
+      <edit-modal :course="courseSelect" :open="modalEdit" :changeModal="openModalEdit" v-if="modalEdit"
+        :loadCourse="loadCourse" />
 
-      <delete-modal
-        :course="courseSelect"
-        :open="modalDelete"
-        :changeModal="openModalDelete"
-        v-if="modalDelete"
-      />
+      <delete-modal :course="courseSelect" :open="modalDelete" :changeModal="openModalDelete" v-if="modalDelete"
+        :loadCourse="loadCourse" />
     </div>
   </q-page>
 </template>
@@ -87,7 +55,10 @@ import { useRoute, useRouter } from "vue-router";
 import CreateCourseModal from "../../modal/admin/courses/CreateCourseModal.vue";
 import EditCourseModal from "../../modal/admin/courses/EditCourseModal.vue";
 import DeleteCourseModal from "../../modal/admin/courses/DeleteCourseModal.vue";
-import { ref } from "vue";
+import Swal from "sweetalert2";
+import { ref, onMounted } from "vue";
+import { api } from "src/boot/axios";
+
 
 const router = useRouter();
 const route = useRoute();
@@ -105,6 +76,7 @@ const modalCreate = ref(false);
 const modalEdit = ref(false);
 const modalDelete = ref(false);
 const courseSelect = ref({});
+const rows = ref([]);
 
 const openModalCreate = () => {
   modalCreate.value = !modalCreate.value;
@@ -117,6 +89,24 @@ const openModalDelete = (courseS) => {
   courseSelect.value = courseS;
   modalDelete.value = !modalDelete.value;
 };
+
+const loadCourse = async () => {
+  try {
+    const res = await api.get("/course")
+    console.log('RESS ', res, res.data);
+    rows.value = res.data
+  } catch (error) {
+    console.log('error', error);
+    Swal.fire({
+      title: "Error",
+      text: error.message && !error.response ? error.message : error.response.data.error,
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  }
+
+}
+
 
 const columns = [
   {
@@ -151,15 +141,12 @@ const columns = [
   },
 ];
 
-const rows = [
-  {
-    name: "Matemática",
-    teacher: "Alejandro",
-    hours: 20,
-    description:
-      "Curso para mejorar las habilidades matemáticaASDDDDDDDDDDDDDSAAAAAAAAAAAs",
-  },
-];
+onMounted(() => {
+  loadCourse()
+})
+
+
+
 </script>
 
 <style scoped>

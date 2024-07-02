@@ -7,18 +7,8 @@
       <div class="dataBox">
         <div class="tableCourses">
           <div class="q-pa-md">
-            <q-table
-              flat
-              bordered
-              title="Próximos Encuentros"
-              :rows="rows"
-              :columns="columns"
-              row-key="name"
-              binary-state-sort
-              class="tableCourse"
-              rows-per-page-label="Documentos por página"
-              dark
-            >
+            <q-table flat bordered title="Próximos Encuentros" :rows="rows" :columns="columns" row-key="name"
+              binary-state-sort class="tableCourse" rows-per-page-label="Documentos por página" dark>
               <template v-slot:top>
                 <p>Usuarios</p>
                 <q-space />
@@ -29,30 +19,16 @@
                   <q-td key="name" :props="props">
                     {{ props.row.name }}
                   </q-td>
-                  <q-td key="lastName" :props="props">
-                    {{ props.row.lastName }}
-                  </q-td>
                   <q-td key="email" :props="props">
                     {{ props.row.email }}
                   </q-td>
-                  <q-td key="age" :props="props">
-                    {{ props.row.age }}
+                  <q-td key="phone" :props="props">
+                    {{ props.row.phone }}
                   </q-td>
                   <q-td key="actions" :props="props">
                     <div class="q-gutter-sm row justify-center">
-                      <q-btn
-                        rounded
-                        @click="openModalEdit(props.row)"
-                        color="blue"
-                        icon="edit"
-                      />
-
-                      <q-btn
-                        rounded
-                        @click="openModalDelete(props.row)"
-                        color="red"
-                        icon="delete"
-                      />
+                      <q-btn rounded @click="openModalEdit(props.row)" color="blue" icon="edit" />
+                      <q-btn rounded @click="openModalDelete(props.row)" color="red" icon="delete" />
                     </div>
                   </q-td>
                 </q-tr>
@@ -61,19 +37,11 @@
           </div>
         </div>
       </div>
-      <edit-modal
-        :user="userSelect"
-        :open="modalEdit"
-        :changeModal="openModalEdit"
-        v-if="modalEdit"
-      />
+      <edit-modal :user="userSelect" :open="modalEdit" :changeModal="openModalEdit" :loadCourse="loadCourse"
+        v-if="modalEdit" />
 
-      <delete-modal
-        :user="userSelect"
-        :open="modalDelete"
-        :changeModal="openModalDelete"
-        v-if="modalDelete"
-      />
+      <delete-modal :user="userSelect" :open="modalDelete" :changeModal="openModalDelete" :loadCourse="loadCourse"
+        v-if="modalDelete" />
     </div>
   </q-page>
 </template>
@@ -81,7 +49,9 @@
 <script setup>
 import EditUserModal from "../../modal/admin/users/EditUserModal.vue";
 import DeleteUserModal from "../../modal/admin/users/DeleteUserModal.vue";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { api } from "src/boot/axios";
+
 
 defineOptions({
   name: "AdminCourses",
@@ -94,6 +64,7 @@ defineOptions({
 const modalEdit = ref(false);
 const modalDelete = ref(false);
 const userSelect = ref({});
+const rows = ref([]);
 
 const openModalEdit = (userS) => {
   userSelect.value = userS;
@@ -103,6 +74,25 @@ const openModalDelete = (userS) => {
   userSelect.value = userS;
   modalDelete.value = !modalDelete.value;
 };
+
+const loadCourse = async () => {
+  try {
+    const res = await api.get("/users")
+    rows.value = res.data
+  } catch (error) {
+    console.log('error', error);
+    Swal.fire({
+      title: "Error",
+      text: error.message && !error.response ? error.message : error.response.data.error,
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  }
+}
+
+onMounted(() => {
+  loadCourse()
+})
 
 const columns = [
   {
@@ -115,22 +105,16 @@ const columns = [
     sortable: true,
   },
   {
-    name: "lastName",
-    align: "center",
-    label: "Apellido",
-    field: "lastName",
-  },
-  {
     name: "email",
     align: "center",
     label: "Email",
     field: "email",
   },
   {
-    name: "age",
+    name: "phone",
     align: "center",
-    label: "Edad",
-    field: "age",
+    label: "Teléfono",
+    field: "phone",
   },
   {
     name: "actions",
@@ -139,17 +123,9 @@ const columns = [
     content: "center",
     field: "actions",
     classes: "test",
-  },
+  }
 ];
 
-const rows = [
-  {
-    name: "Ale",
-    lastName: "Rojas",
-    email: "Alexrojas50.arj@gmail.com",
-    age: "22",
-  },
-];
 </script>
 
 <style scoped>

@@ -12,15 +12,15 @@
       </q-card-section>
 
       <q-separator />
-      <div class="loaderContainer">
-        <span class="loader" v-if="loading"></span>
+      <div class="loaderContainer" v-if="loading">
+        <span class="loader"></span>
       </div>
 
       <q-separator />
 
       <q-card-actions align="right" class="row justify-around">
         <q-btn color="primary" label="Regresar" @click="close(false)" />
-        <q-btn color="red" label="Eliminar Curso" @click="close(false)" />
+        <q-btn color="red" label="Eliminar Curso" @click="close(true)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -29,8 +29,9 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted, watch } from "vue";
+import { api } from "../../../boot/axios.js"
 import Swal from "sweetalert2";
-const props = defineProps(["course", "open", "changeModal"]);
+const props = defineProps(["course", "open", "changeModal", "loadCourse"]);
 
 const router = useRouter();
 const route = useRoute();
@@ -41,24 +42,35 @@ defineOptions({
 
 const card = ref(props.open);
 const loading = ref(false);
-const course = ref(props.course);
+const courseId = ref(props.course._id);
 
-const close = (decision) => {
-  if (decision) {
-    loading.value = true;
-    setTimeout(() => {
-      loading.value = false;
-      card.value = false;
+
+const close = async (decision) => {
+  try {
+    if (decision) {
+      loading.value = true;
+      await api.delete(`/course?courseId=${courseId.value}`)
       Swal.fire({
-        title: "Elimnado",
-        text: "Curso Elimnado Correctamente",
+        title: "Eliminado",
+        text: 'Curso elminado correctamente',
         icon: "success",
         confirmButtonText: "Aceptar",
-        timer: 3000,
-        timerProgressBar: true,
       });
-    }, 5000);
-  } else {
+      props.loadCourse()
+
+    } else {
+      loading.value = false;
+      card.value = false;
+    }
+  } catch (error) {
+    console.log('ERROR ', error);
+    Swal.fire({
+      title: "Error",
+      text: error.message && !error.response ? error.message : error.response.data.error || error.message,
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  } finally {
     loading.value = false;
     card.value = false;
   }
@@ -135,6 +147,5 @@ watch(loading, () => {
   }
 }
 
-.inputCreate {
-}
+.inputCreate {}
 </style>

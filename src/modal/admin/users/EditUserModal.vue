@@ -6,22 +6,33 @@
       </q-card-section>
 
       <q-card-section class="q-pt-md">
-        <q-input v-model="userName" class="" filled label="Nombre del Curso"></q-input>
-        <q-input v-model="userLastName" class="q-mt-md" filled label="Maestro"></q-input>
-        <q-input v-model="userEmail" class="q-mt-md" filled label="Horas"></q-input>
-        <q-input v-model="userAge" class="q-mt-md" filled label="Descripción"></q-input>
+        <q-input v-model="userName" ref="userNameRef" class="" filled label="Nombre Y Apellido"
+          :rules="rules.name"></q-input>
+        <q-input v-model="userEmail" ref="userEmailRef" class="q-mt-md" filled label="Email"
+          :rules="rules.email"></q-input>
+        <q-input v-model="userPhone" ref="userPhoneRef" class="q-mt-md" filled label="Teléfono"
+          :rules="rules.phone"></q-input>
+        <q-input v-model="userPassword" ref="userPasswordRef" class="q-mt-md" filled label="Contraseña"
+          :rules="rules.password"></q-input>
+
+
       </q-card-section>
 
       <q-separator />
-
-      <div class="loaderContainer" v-if="loading">
+      <div class=" loaderContainer" v-if="loading">
         <span class="loader"></span>
       </div>
 
       <q-separator />
 
       <q-card-actions align="right">
-        <q-btn color="primary" label="Editar Usuario" @click="inscribe" />
+        <q-btn type="submit" flat color="primary" label="Editar Usuario" @click="editUser"
+          :disable="!userName || !userEmail || !userPhone">
+          <q-tooltip class="bg-red text-h6" anchor="center left" self="center right" :offset="[10, 10]"
+            v-if="!userName || !userEmail || !userPhone">Rellena todos los
+            campos
+          </q-tooltip>
+        </q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -30,42 +41,88 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted, watch } from "vue";
+import { api } from "../../../boot/axios.js"
 import Swal from "sweetalert2";
-const props = defineProps(["user", "open", "changeModal"]);
+
+const props = defineProps(["user", "open", "changeModal", "loadCourse"]);
 
 const router = useRouter();
 const route = useRoute();
 
 defineOptions({
-  name: "EditUser",
+  name: "EditCourse",
 });
 
 const card = ref(props.open);
+
 const userName = ref(props.user.name);
-const userLastName = ref(props.user.lastName);
 const userEmail = ref(props.user.email);
-const userAge = ref(props.user.age);
+const userPhone = ref(props.user.phone);
+const userPassword = ref("");
+const userId = ref(props.user._id);
 const loading = ref(false);
 
-const inscribe = () => {
-  loading.value = true;
+const userNameRef = ref(null);
+const userEmailRef = ref(null);
+const userPhoneRef = ref(null);
+const userPasswordRef = ref(null);
 
-  setTimeout(() => {
-    loading.value = false;
-    card.value = false;
+const rules = {
+  name: [
+    val => (val.length < 61) || '60 Carácteres máximos en el nombre',
+    val => (val.length > 0) || 'Coloca un nombre'
+  ],
+  email: [
+    val => (val.length < 61) || '60 Carácteres máximos en el maestro',
+    val => (val.length > 0) || 'Coloca un maestro'
+  ],
+  password: [
+
+  ],
+  phone: [
+    val => (val.toString().length < 11) || '11 Carácteres máximos en la hora',
+    val => (val.toString().length > 0) || 'Coloca una hora',
+    val => (!val.toString().includes('e')) || 'Ingresa un número válido'
+  ],
+}
+
+const editUser = async () => {
+
+  try {
+    loading.value = true;
+
+    userNameRef.value.validate()
+    userEmailRef.value.validate()
+    userPhoneRef.value.validate()
+    userPasswordRef.value.validate()
+
+    if (userNameRef.value.hasError || userEmailRef.value.hasError || userPhoneRef.value.hasError || userPasswordRef.value.hasError) throw { message: 'Cumple con todas las condiciones antes de creare el curso' }
+
+    await api.put('/users', { userName: userName.value, userEmail: userEmail.value, userPhone: userPhone.value, userPassword: userPassword.value, userId: userId.value })
     Swal.fire({
       title: "Editado",
-      text: "Curso Editado Correctamente",
+      text: 'Usuario editado correctamente',
       icon: "success",
       confirmButtonText: "Aceptar",
-      timer: 3000,
-      timerProgressBar: true,
     });
-  }, 5000);
+    props.loadCourse()
+
+  } catch (error) {
+    console.log('ERROR ', error);
+    Swal.fire({
+      title: "Error",
+      text: error.message && !error.response ? error.message : error.response.data.error || error.message,
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  } finally {
+    loading.value = false;
+    card.value = false;
+  }
 };
 
 onMounted(() => {
-  console.log("PROPS ", props);
+  console.log('PROPS ', props);
 });
 
 watch(card, () => {
@@ -135,6 +192,5 @@ watch(loading, () => {
   }
 }
 
-.inputCreate {
-}
+.inputCreate {}
 </style>

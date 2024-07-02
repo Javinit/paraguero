@@ -35,9 +35,6 @@
                   <q-td key="teacher" :props="props">
                     {{ props.row.teacher }}
                   </q-td>
-                  <q-td key="ubication" :props="props">
-                    {{ props.row.ubication }}
-                  </q-td>
                   <q-td key="description" :props="props">
                     {{ props.row.description }}
                   </q-td>
@@ -88,7 +85,8 @@
 import { useRoute, useRouter } from "vue-router";
 import InscribeModal from "../../modal/client/InscribeModal.vue";
 import InfoModal from "../../modal/client/InfoModal.vue";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import {api} from "../../boot/axios.js"
 
 const router = useRouter();
 const route = useRoute();
@@ -104,6 +102,7 @@ defineOptions({
 const modalInscribe = ref(false);
 const modalInfo = ref(false);
 const course = ref("");
+const rows = ref([]);
 
 const changeModalInscribe = (courseSelect) => {
   course.value = courseSelect;
@@ -114,6 +113,12 @@ const changeModalInfo = (courseSelect) => {
   course.value = courseSelect;
   modalInfo.value = !modalInfo.value;
 };
+
+onMounted(async () => {
+  const res = await api.get("/course")
+  console.log('RESSS ',res);
+  rows.value = res.data
+})
 
 const columns = [
   {
@@ -132,12 +137,6 @@ const columns = [
     field: "teacher",
     align: "left",
     sortable: true,
-  },
-  {
-    name: "ubication",
-    label: "Ubicación",
-    field: "ubication",
-    align: "left",
   },
   {
     name: "description",
@@ -160,37 +159,6 @@ const columns = [
   },
 ];
 
-const rows = [
-  {
-    name: "Matemática",
-    teacher: "Alejandro",
-    ubication: "PSM",
-    description:
-      "Curso para mejorar las habilidades matemáticaASDDDDDDDDDDDDDSAAAAAAAAAAAs",
-    hours: 20,
-  },
-  {
-    name: "Dibujo",
-    teacher: "Alejandro",
-    ubication: "PSM",
-    description: "Curso para mejorar las habilidades de dibujo",
-    hours: 20,
-  },
-  {
-    name: "Costura",
-    teacher: "Alejandro",
-    ubication: "PSM",
-    description: "Curso para mejorar las habilidades costura",
-    hours: 20,
-  },
-  {
-    name: "Cocina",
-    teacher: "Alejandro",
-    ubication: "PSM",
-    description: "Curso para mejorar las habilidades cocina",
-    hours: 20,
-  },
-];
 </script>
 
 <style scoped>
