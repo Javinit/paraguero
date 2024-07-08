@@ -28,20 +28,26 @@
               <template v-slot:body="props">
                 <q-tr :props="props">
                   <q-td key="course" :props="props">
-                    {{ props.row.course }}
+                    {{ props.row.course.name }}
                   </q-td>
                   <q-td key="room" :props="props">
-                    {{ props.row.room }}
+                    {{ props.row.room.number }}
                   </q-td>
                   <q-td key="date" :props="props">
                     {{ props.row.date }}
                   </q-td>
                   <q-td key="hour" :props="props">
-                    {{ props.row.hour }}
+                    {{ props.row.time }}
                   </q-td>
 
                   <q-td key="actions" :props="props">
                     <div class="q-gutter-sm row justify-center">
+                      <q-btn
+                        rounded
+                        @click="openModalInfo(props.row)"
+                        color="green"
+                        icon="info"
+                      />
                       <q-btn
                         rounded
                         @click="openModalEdit(props.row)"
@@ -66,6 +72,7 @@
       <create-modal
         :open="modalCreate"
         :changeModal="openModalCreate"
+        :loadMeets="loadMeets"
         v-if="modalCreate"
       />
 
@@ -73,13 +80,23 @@
         :meet="meetSelect"
         :open="modalEdit"
         :changeModal="openModalEdit"
+        :loadMeets="loadMeets"
         v-if="modalEdit"
+      />
+
+      <info-modal
+        :meet="meetSelect"
+        :open="modalInfo"
+        :changeModal="openModalInfo"
+        :loadMeets="loadMeets"
+        v-if="modalInfo"
       />
 
       <delete-modal
         :meet="meetSelect"
         :open="modalDelete"
         :changeModal="openModalDelete"
+        :loadMeets="loadMeets"
         v-if="modalDelete"
       />
     </div>
@@ -89,9 +106,12 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 import CreateRoomModal from "../../modal/admin/meets/CreateMeetModal.vue";
+import InfoMeetModal from "../../modal/admin/meets/InfoMeetModal.vue";
 import EditRoomModal from "../../modal/admin/meets/EditMeetModal.vue";
 import DeleteRoomModal from "../../modal/admin/meets/DeleteMeetModal.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import Swal from "sweetalert2";
+import { api } from "src/boot/axios";
 
 const router = useRouter();
 const route = useRoute();
@@ -100,19 +120,27 @@ defineOptions({
   name: "AdminMeets",
   components: {
     "create-modal": CreateRoomModal,
+    "info-modal": InfoMeetModal,
     "edit-modal": EditRoomModal,
     "delete-modal": DeleteRoomModal,
   },
 });
 
 const modalCreate = ref(false);
+const modalInfo = ref(false);
 const modalEdit = ref(false);
 const modalDelete = ref(false);
 const meetSelect = ref({});
+const rows = ref([]);
 
 const openModalCreate = () => {
   modalCreate.value = !modalCreate.value;
 };
+const openModalInfo = (meetS) => {
+  meetSelect.value = meetS;
+  modalInfo.value = !modalInfo.value;
+};
+
 const openModalEdit = (meetS) => {
   meetSelect.value = meetS;
   modalEdit.value = !modalEdit.value;
@@ -121,6 +149,25 @@ const openModalDelete = (meetS) => {
   meetSelect.value = meetS;
   modalDelete.value = !modalDelete.value;
 };
+
+const loadMeets = async () => {
+  try {
+    const res = await api.get("/meet");
+    rows.value = res.data;
+  } catch (error) {
+    console.log("error", error);
+    Swal.fire({
+      title: "Error",
+      text: error.message && !error.response ? error.message : error.response.data.error,
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  }
+};
+
+onMounted(() => {
+  loadMeets();
+});
 
 const columns = [
   {
@@ -158,16 +205,6 @@ const columns = [
     align: "center",
     content: "center",
     field: "actions",
-  },
-];
-
-const rows = [
-  {
-    course: "Matemática",
-    room: 1,
-    date: "2024-02-19",
-    hour: "02:00 PM",
-    status: true,
   },
 ];
 </script>

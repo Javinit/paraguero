@@ -47,6 +47,10 @@ export default route(function (/* { store, ssrContext } */) {
       }
     }
 
+    if (authUser.value.userLevel == 3 && (!to.fullPath.startsWith('/teacher'))) {
+      // return { name: 'Teacher' }
+    }
+
     if (authUser.value.userLevel == 2 && (!to.fullPath.startsWith('/client'))) {
       return { name: 'Client' }
     }

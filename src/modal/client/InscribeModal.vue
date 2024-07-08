@@ -10,7 +10,7 @@
       <q-card-section class="q-pt-none">
         <div class="text-subtitle1">Horas : {{ course.hours }}</div>
         <div class="text-subtitle1">Profesor : {{ course.teacher }}</div>
-        <div class="text-subtitle1">Aula : #{{ model.room }}</div>
+        <div class="text-subtitle1">Aula : #{{ model.data?.room?.number }}</div>
       </q-card-section>
 
       <q-separator />
@@ -45,6 +45,7 @@
 import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted, watch } from "vue";
 import Swal from "sweetalert2";
+import { api } from "src/boot/axios";
 const props = defineProps(["course", "open", "changeModal"]);
 
 const router = useRouter();
@@ -58,27 +59,38 @@ const card = ref(props.open);
 const course = ref(props.course);
 const model = ref("");
 const loading = ref(false);
+const futureMeetings = ref([]);
 
-const inscribe = () => {
-  loading.value = true;
-
-  setTimeout(() => {
-    loading.value = false;
-    card.value = false;
+const inscribe = async () => {
+  try {
+    loading.value = true;
+    await api.post(`/meet/inscribe?meet=${model.value.data._id}`);
     Swal.fire({
       title: "Registrado",
-      text: 'Te has registrado exitosamente',
+      text: "Te has registrado exitosamente",
       icon: "success",
       confirmButtonText: "Aceptar",
       timer: 3000,
       timerProgressBar: true,
     });
-  }, 5000);
-
+  } catch (error) {
+    Swal.fire({
+      title: "Error",
+      text: error.message && !error.response ? error.message : error.response.data.error,
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  } finally {
+    loading.value = false;
+    card.value = false;
+  }
 };
 
-onMounted(() => {
-  console.log("PROPS ", props);
+onMounted(async () => {
+  console.log("PROPS ", course.value);
+  const res = await api.get(`/meet?courseId=${course.value._id}&isForInscribe=true`);
+  console.log("RESSS ", res);
+  futureMeetings.value = res.data;
 });
 
 watch(card, () => {
@@ -88,37 +100,6 @@ watch(card, () => {
 watch(loading, () => {
   console.log("CHANGE LOADING ", loading);
 });
-
-const futureMeetings = [
-  {
-    date: "2024-05-02",
-    hour: "2:00 PM",
-    direction: "TALTALTAL",
-    label: "2024-05-02 2:00 PM",
-    room: "5",
-  },
-  {
-    date: "2024-05-03",
-    hour: "5:00 PM",
-    direction: "TALTALTAL",
-    label: "2024-05-03 5:00 PM",
-    room: "6",
-  },
-  {
-    date: "2024-05-04",
-    hour: "4:00 PM",
-    direction: "TALTALTAL",
-    label: "2024-05-04 4:00 PM",
-    room: "7",
-  },
-  {
-    date: "2024-05-05",
-    hour: "3:00 PM",
-    direction: "TALTALTAL",
-    label: "2024-05-05 3:00 PM",
-    room: "8",
-  },
-];
 </script>
 
 <style scoped>

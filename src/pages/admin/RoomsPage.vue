@@ -66,6 +66,7 @@
       <create-modal
         :open="modalCreate"
         :changeModal="openModalCreate"
+        :loadRooms="loadRooms"
         v-if="modalCreate"
       />
 
@@ -73,6 +74,7 @@
         :room="courseSelect"
         :open="modalEdit"
         :changeModal="openModalEdit"
+        :loadRooms="loadRooms"
         v-if="modalEdit"
       />
 
@@ -80,6 +82,7 @@
         :room="courseSelect"
         :open="modalDelete"
         :changeModal="openModalDelete"
+        :loadRooms="loadRooms"
         v-if="modalDelete"
       />
     </div>
@@ -91,7 +94,8 @@ import { useRoute, useRouter } from "vue-router";
 import CreateCourseModal from "../../modal/admin/rooms/CreateRoomModal.vue";
 import EditCourseModal from "../../modal/admin/rooms/EditRoomModal.vue";
 import DeleteCourseModal from "../../modal/admin/rooms/DeleteRoomModal.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { api } from "src/boot/axios";
 
 const router = useRouter();
 const route = useRoute();
@@ -109,6 +113,7 @@ const modalCreate = ref(false);
 const modalEdit = ref(false);
 const modalDelete = ref(false);
 const courseSelect = ref({});
+const rows = ref([]);
 
 const openModalCreate = () => {
   modalCreate.value = !modalCreate.value;
@@ -121,6 +126,24 @@ const openModalDelete = (courseS) => {
   courseSelect.value = courseS;
   modalDelete.value = !modalDelete.value;
 };
+
+const loadRooms = async () => {
+  try {
+    const res = await api.get("/room");
+    rows.value = res.data;
+  } catch (error) {
+    Swal.fire({
+      title: "Error",
+      text: "Error al cargar las aulas",
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  }
+};
+
+onMounted(() => {
+  loadRooms();
+});
 
 const columns = [
   {
@@ -146,13 +169,6 @@ const columns = [
     align: "center",
     content: "center",
     field: "actions",
-  },
-];
-
-const rows = [
-  {
-    number: 1,
-    status: true,
   },
 ];
 </script>
@@ -261,5 +277,7 @@ p {
 .statusClassTable {
   display: flex;
   justify-content: center;
+  align-items: center;
+  height: 55px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="card">
+  <q-dialog v-model="card" persistent>
     <q-card class="my-card">
       <q-card-section>
         <div class="row no-wrap items-center">
@@ -19,8 +19,8 @@
           color="teal"
           filled
           v-model="courseS"
-          :options="futureMeetings"
-          label="Label"
+          :options="avalibleCourse"
+          label="Curso"
         >
           <template v-slot:prepend>
             <q-icon name="book" />
@@ -35,8 +35,8 @@
           color="teal"
           filled
           v-model="roomS"
-          :options="futureMeetings"
-          label="Label"
+          :options="avalibleRooms"
+          label="Aula"
         >
           <template v-slot:prepend>
             <q-icon name="meeting_room" />
@@ -47,14 +47,7 @@
       <q-card-section class="q-pt-md">
         <div class="text-subtitle1">Selecciona una Fecha</div>
         <!-- <div class="text-subtitle1">Teacher : {{ course.teacher }}</div> -->
-        <q-input
-          color="teal"
-          filled
-          v-model="dateS"
-          :options="futureMeetings"
-          label="Label"
-          type="date"
-        >
+        <q-input color="teal" filled v-model="dateS" label="Fecha" type="date">
           <template v-slot:prepend>
             <q-icon name="event" />
           </template>
@@ -64,14 +57,7 @@
       <q-card-section class="q-pt-md">
         <div class="text-subtitle1">Selecciona una Hora</div>
         <!-- <div class="text-subtitle1">Teacher : {{ course.teacher }}</div> -->
-        <q-input
-          color="teal"
-          filled
-          v-model="timeS"
-          :options="futureMeetings"
-          label="Label"
-          type="time"
-        >
+        <q-input color="teal" filled v-model="timeS" label="Hora" type="time">
           <template v-slot:prepend>
             <q-icon name="schedule" />
           </template>
@@ -80,8 +66,10 @@
 
       <q-separator />
 
-      <q-card-actions align="right">
-        <q-btn color="primary" label="Crear Encuentro" @click="close" />
+      <q-card-actions align="around">
+        <q-btn color="red" label="Cancelar" @click="close(false)" />
+
+        <q-btn color="primary" label="Crear Encuentro" @click="close(true)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -92,8 +80,9 @@ import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted, watch } from "vue";
 import Swal from "sweetalert2";
 import moment from "moment";
+import { api } from "src/boot/axios";
 
-const props = defineProps(["course", "open", "changeModal"]);
+const props = defineProps(["loadMeets", "open", "changeModal"]);
 
 const router = useRouter();
 const route = useRoute();
@@ -105,42 +94,68 @@ defineOptions({
 const card = ref(props.open);
 const loading = ref(false);
 
-const courseS = ref({});
-const roomS = ref({});
-const dateS = ref(moment().toDate());
+const courseS = ref(null);
+const roomS = ref(null);
+const dateS = ref("");
 const timeS = ref("");
 
-const close = (decision) => {
-  if (decision) {
-    loading.value = true;
-    setTimeout(() => {
-      loading.value = false;
-      card.value = false;
+const avalibleCourse = ref([]);
+const avalibleRooms = ref([]);
+
+const close = async (decision) => {
+  try {
+    if (decision) {
+      loading.value = true;
+      await api.post("/meet", {
+        courseId: courseS.value.id,
+        roomId: roomS.value.id,
+        date: dateS.value,
+        time: timeS.value,
+      });
       Swal.fire({
-        title: "Creado",
-        text: "Encuentro Creado Correctamente",
+        title: "Creada",
+        text: "Aula creada Correctamente",
         icon: "success",
         confirmButtonText: "Aceptar",
         timer: 3000,
         timerProgressBar: true,
       });
-    }, 5000);
-  } else {
+      loading.value = false;
+      card.value = false;
+      props.loadMeets();
+    } else {
+      loading.value = false;
+      card.value = false;
+    }
+  } catch (error) {
     loading.value = false;
     card.value = false;
+    console.log("ERROR ", error);
+    Swal.fire({
+      title: "Error",
+      text: "Error al crear el aula",
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
   }
 };
 
-onMounted(() => {
-  console.log("PROPS ", props);
+onMounted(async () => {
+  await api.get("/course?isForMeets=true").then((res) => {
+    avalibleCourse.value = res.data;
+  });
+
+  await api.get("/room?isForMeets=true").then((res) => {
+    avalibleRooms.value = res.data;
+  });
 });
 
 watch(card, () => {
   props.changeModal();
 });
 
-watch(loading, () => {
-  console.log("CHANGE LOADING ", loading);
+watch(courseS, () => {
+  console.log("CHANGE courseS ", courseS);
 });
 </script>
 

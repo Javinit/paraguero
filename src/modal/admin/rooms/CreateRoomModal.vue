@@ -28,7 +28,8 @@
 import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted, watch } from "vue";
 import Swal from "sweetalert2";
-const props = defineProps(["course", "open", "changeModal"]);
+import { api } from "src/boot/axios";
+const props = defineProps(["open", "changeModal", "loadRooms"]);
 
 const router = useRouter();
 const route = useRoute();
@@ -40,24 +41,36 @@ defineOptions({
 const card = ref(props.open);
 const loading = ref(false);
 
-const close = (decision) => {
-  if (decision) {
-    loading.value = true;
-    setTimeout(() => {
-      loading.value = false;
-      card.value = false;
+const close = async (decision) => {
+  try {
+    if (decision) {
+      loading.value = true;
+      await api.post("/room");
       Swal.fire({
-        title: "Elimnado",
-        text: "Curso Elimnado Correctamente",
+        title: "Creada",
+        text: "Aula creada Correctamente",
         icon: "success",
         confirmButtonText: "Aceptar",
         timer: 3000,
         timerProgressBar: true,
       });
-    }, 5000);
-  } else {
+      loading.value = false;
+      card.value = false;
+      props.loadRooms();
+    } else {
+      loading.value = false;
+      card.value = false;
+    }
+  } catch (error) {
     loading.value = false;
     card.value = false;
+    console.log("ERROR ", error);
+    Swal.fire({
+      title: "Error",
+      text: "Error al crear el aula",
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
   }
 };
 

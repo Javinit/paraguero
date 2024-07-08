@@ -48,6 +48,9 @@
 </template>
 
 <script setup>
+import { api } from "src/boot/axios";
+import Swal from "sweetalert2";
+import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const router = useRouter();
@@ -57,6 +60,7 @@ defineOptions({
   name: "AdminPage",
 });
 
+const rows = ref([]);
 const columns = [
   {
     name: "name",
@@ -83,13 +87,19 @@ const columns = [
   },
 ];
 
-const rows = [
-  {
-    name: "Matemática",
-    teacher: "Alejandro",
-    hours: 20,
-  },
-];
+onMounted(async () => {
+  try {
+    const res = await api.get("/course");
+    rows.value = res.data;
+  } catch (error) {
+    Swal.fire({
+      title: "Error",
+      text: "Error al cargar los cursos",
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
+  }
+});
 
 const toCourses = () => router.push({ name: "AdminCourses" });
 const toRooms = () => router.push({ name: "AdminRooms" });

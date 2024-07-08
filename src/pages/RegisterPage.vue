@@ -21,6 +21,13 @@
           id="username"
           v-model="userName"
         />
+        <label for="username">Teléfono</label>
+        <input
+          type="text"
+          placeholder="Ingresa un número de teléfono"
+          id="phone"
+          v-model="phone"
+        />
         <label for="password">Password</label>
         <input
           type="password"
@@ -55,6 +62,7 @@ defineOptions({
 
 const userEmail = ref("");
 const userName = ref("");
+const phone = ref("");
 const password = ref("");
 const loading = ref(false);
 
@@ -76,6 +84,7 @@ const Register = async () => {
       userEmail: userEmail.value,
       userName: userName.value,
       password: password.value,
+      phone: phone.value
     });
 
     api.defaults.headers.common["Authorization"] = res.data.token;
